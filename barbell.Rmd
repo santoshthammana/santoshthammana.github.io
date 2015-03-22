@@ -58,7 +58,7 @@ validation_set = training[-train_cv_indices, ]
 ```
 
 
-Random forests will be used for training.  This method creates multiple trees and uses voting.  The below code performs cross validation and outputs the cross-validation error.
+Random forests will be used for training.  This method creates multiple trees and uses voting.  The below code performs 10-fold cross validation and outputs the cross-validation error.  50 trees will be used in random forest creation.
 
 ```{r}
 # Use the randomForest package because caret is very slow when creating random forests

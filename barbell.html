@@ -109,7 +109,7 @@ set.seed(11611)
 train_cv_indices = createDataPartition(y = training$classe, p = 0.8, list = FALSE)
 training_cv = training[train_cv_indices, ]
 validation_set = training[-train_cv_indices, ]</code></pre>
-<p>Random forests will be used for training. This method creates multiple trees and uses voting. The below code performs cross validation and outputs the cross-validation error.</p>
+<p>Random forests will be used for training. This method creates multiple trees and uses voting. The below code performs 10-fold cross validation and outputs the cross-validation error. 50 trees will be used in random forest creation.</p>
 <pre class="r"><code># Use the randomForest package because caret is very slow when creating random forests
 # Because caret is not being used, cross-validation functionality will be recreated below.
 
