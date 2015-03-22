@@ -81,15 +81,19 @@ summary(training)
 
 useful_columns = c(&quot;num_window&quot;, &quot;roll_belt&quot;, &quot;pitch_belt&quot;, &quot;yaw_belt&quot;,
   &quot;total_accel_belt&quot;, &quot;gyros_belt_x&quot;, &quot;gyros_belt_y&quot;, &quot;gyros_belt_z&quot;,
-  &quot;accel_belt_x&quot;, &quot;accel_belt_y&quot;, &quot;accel_belt_z&quot;, &quot;magnet_belt_x&quot;, &quot;magnet_belt_y&quot;, &quot;magnet_belt_z&quot;,
-  &quot;roll_arm&quot;, &quot;pitch_arm&quot;, &quot;yaw_arm&quot;, &quot;total_accel_arm&quot;, &quot;gyros_arm_x&quot;, &quot;gyros_arm_y&quot;, &quot;gyros_arm_z&quot;,
-  &quot;accel_arm_x&quot;, &quot;accel_arm_y&quot;, &quot;accel_arm_z&quot;, &quot;magnet_arm_x&quot;, &quot;magnet_arm_y&quot;, &quot;magnet_arm_z&quot;,
-  &quot;roll_dumbbell&quot;, &quot;pitch_dumbbell&quot;, &quot;yaw_dumbbell&quot;, &quot;total_accel_dumbbell&quot;, &quot;gyros_dumbbell_x&quot;,
-  &quot;gyros_dumbbell_y&quot;, &quot;gyros_dumbbell_z&quot;, &quot;accel_dumbbell_x&quot;, &quot;accel_dumbbell_y&quot;, &quot;accel_dumbbell_z&quot;,
-  &quot;magnet_dumbbell_x&quot;, &quot;magnet_dumbbell_y&quot;, &quot;magnet_dumbbell_z&quot;, &quot;roll_forearm&quot;, &quot;pitch_forearm&quot;,
-  &quot;yaw_forearm&quot;, &quot;total_accel_forearm&quot;, &quot;gyros_forearm_x&quot;, &quot;gyros_forearm_y&quot;, &quot;gyros_forearm_z&quot;,
-  &quot;accel_forearm_x&quot;, &quot;accel_forearm_y&quot;, &quot;accel_forearm_z&quot;, &quot;magnet_forearm_x&quot;, &quot;magnet_forearm_y&quot;,
-  &quot;magnet_forearm_z&quot;)
+  &quot;accel_belt_x&quot;, &quot;accel_belt_y&quot;, &quot;accel_belt_z&quot;, &quot;magnet_belt_x&quot;, &quot;magnet_belt_y&quot;,
+  &quot;magnet_belt_z&quot;,
+  &quot;roll_arm&quot;, &quot;pitch_arm&quot;, &quot;yaw_arm&quot;, &quot;total_accel_arm&quot;, &quot;gyros_arm_x&quot;,
+  &quot;gyros_arm_y&quot;, &quot;gyros_arm_z&quot;,
+  &quot;accel_arm_x&quot;, &quot;accel_arm_y&quot;, &quot;accel_arm_z&quot;, &quot;magnet_arm_x&quot;, &quot;magnet_arm_y&quot;,
+  &quot;magnet_arm_z&quot;, &quot;roll_dumbbell&quot;, &quot;pitch_dumbbell&quot;, &quot;yaw_dumbbell&quot;,
+  &quot;total_accel_dumbbell&quot;, &quot;gyros_dumbbell_x&quot;, &quot;gyros_dumbbell_y&quot;, &quot;gyros_dumbbell_z&quot;,
+  &quot;accel_dumbbell_x&quot;, &quot;accel_dumbbell_y&quot;, &quot;accel_dumbbell_z&quot;,
+  &quot;magnet_dumbbell_x&quot;, &quot;magnet_dumbbell_y&quot;, &quot;magnet_dumbbell_z&quot;, &quot;roll_forearm&quot;,
+  &quot;pitch_forearm&quot;, &quot;yaw_forearm&quot;, &quot;total_accel_forearm&quot;, &quot;gyros_forearm_x&quot;,
+  &quot;gyros_forearm_y&quot;, &quot;gyros_forearm_z&quot;,
+  &quot;accel_forearm_x&quot;, &quot;accel_forearm_y&quot;, &quot;accel_forearm_z&quot;, &quot;magnet_forearm_x&quot;,
+  &quot;magnet_forearm_y&quot;, &quot;magnet_forearm_z&quot;)
 # in addition to the columns above, the training data has a class label
 training = training[, c(useful_columns, &quot;classe&quot;)]
 # in addition to the columns above, the testing data has a problem id
@@ -109,7 +113,8 @@ validation_set = training[-train_cv_indices, ]</code></pre>
 <pre class="r"><code># Use the randomForest package because caret is very slow when creating random forests
 # Because caret is not being used, cross-validation functionality will be recreated below.
 
-# Function to compute number of incorrectly classified examples on a single fold during cross-validation
+# Function to compute number of incorrectly classified examples on a single fold
+# during cross-validation
 getNumWrong = function(modelFit) {
   correct = sum(diag(modelFit$test$confusion))
   total = sum(modelFit$test$confusion[, 1:5])
@@ -123,20 +128,24 @@ for (fold_number in 1:10) {
   training_folds = training_cv[folds != fold_number, ]
   testing_fold = training_cv[folds == fold_number, ]
   # 50 trees are used for the random forest
-  modelFit = randomForest(training_folds[, -54], training_folds$classe, ntree=50, xtest = testing_fold[, -54], ytest = testing_fold$classe)
+  modelFit = randomForest(training_folds[, -54], training_folds$classe, ntree=50,
+                          xtest = testing_fold[, -54], ytest = testing_fold$classe)
   fold_num_wrong = getNumWrong(modelFit)
   # weight the error by the fold size (the fold sizes are almost equal to each other)
   num_wrong = num_wrong + fold_num_wrong
 }
 
-# Divide the number wrong by the total examples used for cross validation, since every example would have been in one of the folds used for testing the model built on the remaining folds
+# Divide the number wrong by the total examples used for cross validation, since every example
+# would have been in one of the folds used for testing the model built on the remaining folds
 num_wrong/length(training_cv$classe)</code></pre>
 <pre><code>## [1] 0.003184916</code></pre>
 <p>The cross-validation error is 0.32%. Because this is a very low number, this model and parameters are sufficient. To estimate the out of sample error, create the final model using the entire cross-validation data set, and run it on the validation/holdout set.</p>
 </div>
 <div id="out-of-sample-error-estimate" class="section level2">
 <h2>Out-of-sample error estimate</h2>
-<pre class="r"><code>finalModelFit = randomForest(training_cv[, -54], training_cv$classe, ntree=50, xtest = validation_set[, -54], ytest = validation_set$classe, keep.forest=TRUE)
+<pre class="r"><code>finalModelFit = randomForest(training_cv[, -54], training_cv$classe, ntree=50,
+                             xtest = validation_set[, -54], ytest = validation_set$classe,
+                             keep.forest=TRUE)
 finalModelFit</code></pre>
 <pre><code>## 
 ## Call:

@@ -24,15 +24,19 @@ summary(training)
 
 useful_columns = c("num_window", "roll_belt", "pitch_belt", "yaw_belt",
   "total_accel_belt", "gyros_belt_x", "gyros_belt_y", "gyros_belt_z",
-  "accel_belt_x", "accel_belt_y", "accel_belt_z", "magnet_belt_x", "magnet_belt_y", "magnet_belt_z",
-  "roll_arm", "pitch_arm", "yaw_arm", "total_accel_arm", "gyros_arm_x", "gyros_arm_y", "gyros_arm_z",
-  "accel_arm_x", "accel_arm_y", "accel_arm_z", "magnet_arm_x", "magnet_arm_y", "magnet_arm_z",
-  "roll_dumbbell", "pitch_dumbbell", "yaw_dumbbell", "total_accel_dumbbell", "gyros_dumbbell_x",
-  "gyros_dumbbell_y", "gyros_dumbbell_z", "accel_dumbbell_x", "accel_dumbbell_y", "accel_dumbbell_z",
-  "magnet_dumbbell_x", "magnet_dumbbell_y", "magnet_dumbbell_z", "roll_forearm", "pitch_forearm",
-  "yaw_forearm", "total_accel_forearm", "gyros_forearm_x", "gyros_forearm_y", "gyros_forearm_z",
-  "accel_forearm_x", "accel_forearm_y", "accel_forearm_z", "magnet_forearm_x", "magnet_forearm_y",
-  "magnet_forearm_z")
+  "accel_belt_x", "accel_belt_y", "accel_belt_z", "magnet_belt_x", "magnet_belt_y",
+  "magnet_belt_z",
+  "roll_arm", "pitch_arm", "yaw_arm", "total_accel_arm", "gyros_arm_x",
+  "gyros_arm_y", "gyros_arm_z",
+  "accel_arm_x", "accel_arm_y", "accel_arm_z", "magnet_arm_x", "magnet_arm_y",
+  "magnet_arm_z", "roll_dumbbell", "pitch_dumbbell", "yaw_dumbbell",
+  "total_accel_dumbbell", "gyros_dumbbell_x", "gyros_dumbbell_y", "gyros_dumbbell_z",
+  "accel_dumbbell_x", "accel_dumbbell_y", "accel_dumbbell_z",
+  "magnet_dumbbell_x", "magnet_dumbbell_y", "magnet_dumbbell_z", "roll_forearm",
+  "pitch_forearm", "yaw_forearm", "total_accel_forearm", "gyros_forearm_x",
+  "gyros_forearm_y", "gyros_forearm_z",
+  "accel_forearm_x", "accel_forearm_y", "accel_forearm_z", "magnet_forearm_x",
+  "magnet_forearm_y", "magnet_forearm_z")
 # in addition to the columns above, the training data has a class label
 training = training[, c(useful_columns, "classe")]
 # in addition to the columns above, the testing data has a problem id
@@ -60,7 +64,8 @@ Random forests will be used for training.  This method creates multiple trees an
 # Use the randomForest package because caret is very slow when creating random forests
 # Because caret is not being used, cross-validation functionality will be recreated below.
 
-# Function to compute number of incorrectly classified examples on a single fold during cross-validation
+# Function to compute number of incorrectly classified examples on a single fold
+# during cross-validation
 getNumWrong = function(modelFit) {
   correct = sum(diag(modelFit$test$confusion))
   total = sum(modelFit$test$confusion[, 1:5])
@@ -74,13 +79,15 @@ for (fold_number in 1:10) {
   training_folds = training_cv[folds != fold_number, ]
   testing_fold = training_cv[folds == fold_number, ]
   # 50 trees are used for the random forest
-  modelFit = randomForest(training_folds[, -54], training_folds$classe, ntree=50, xtest = testing_fold[, -54], ytest = testing_fold$classe)
+  modelFit = randomForest(training_folds[, -54], training_folds$classe, ntree=50,
+                          xtest = testing_fold[, -54], ytest = testing_fold$classe)
   fold_num_wrong = getNumWrong(modelFit)
   # weight the error by the fold size (the fold sizes are almost equal to each other)
   num_wrong = num_wrong + fold_num_wrong
 }
 
-# Divide the number wrong by the total examples used for cross validation, since every example would have been in one of the folds used for testing the model built on the remaining folds
+# Divide the number wrong by the total examples used for cross validation, since every example
+# would have been in one of the folds used for testing the model built on the remaining folds
 num_wrong/length(training_cv$classe)
 ```
 
@@ -90,7 +97,9 @@ The cross-validation error is 0.32%.  Because this is a very low number, this mo
 
 ```{r}
 
-finalModelFit = randomForest(training_cv[, -54], training_cv$classe, ntree=50, xtest = validation_set[, -54], ytest = validation_set$classe, keep.forest=TRUE)
+finalModelFit = randomForest(training_cv[, -54], training_cv$classe, ntree=50,
+                             xtest = validation_set[, -54], ytest = validation_set$classe,
+                             keep.forest=TRUE)
 finalModelFit
 ```
 
